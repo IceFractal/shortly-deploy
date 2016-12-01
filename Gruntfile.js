@@ -32,7 +32,7 @@ module.exports = function(grunt) {
     uglify: {
       target: {
         files: {
-          'public/min/output.min.js': ['public/dist/*.js']
+          'public/dist/output.min.js': ['public/dist/*.js']
         }
       }
     },
@@ -50,7 +50,7 @@ module.exports = function(grunt) {
           expand: true,
           cwd: 'public',
           src: ['*.css', '!*.min.css'],
-          dest: 'public/min',
+          dest: 'public/dist',
           ext: '.min.css'
         }]
       }
