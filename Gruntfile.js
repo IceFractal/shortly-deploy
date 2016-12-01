@@ -106,9 +106,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('start', [ 'concat', 'min', 'nodemon' ]);
 
-  grunt.registerTask('build', [
-  ]);
-
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
       grunt.task.run([ 'clean', 'eslint', 'test', 'shell' ]);
