@@ -48,8 +48,6 @@ describe('', function() {
             'url': 'http://www.roflzoo.com/'})
           .expect(200)
           .expect(function(res) {
-            console.log('FAKKU U', res.body);
-            console.log('code          ', res.body.code);
             expect(res.body.url).to.equal('http://www.roflzoo.com/');
             expect(res.body.code).to.be.ok;
           })
@@ -197,7 +195,9 @@ describe('', function() {
           'password': 'Phillip' })
         .expect(302)
         .expect(function(res) {
+          console.log('FARTFACE FUCBUKKIT');
           expect(res.headers.location).to.equal('/');
+          console.log('/// ////');
           request(app)
             .get('/logout')
             .expect(200);

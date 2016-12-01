@@ -39,6 +39,7 @@
 
 // module.exports = db;
 var crypto = require('crypto');
+var bcrypt = require('bcrypt-nodejs');
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
@@ -50,13 +51,17 @@ db.urls = new Schema({
   // id: Number,
   url: String,
   baseUrl: String,
-  code: {type: String, default: function(model, attrs, options) {
-    var shasum = crypto.createHash('sha1');
-    return shasum.digest('hex').slice(0, 5);
-  }},
+  code: String,
   title: String,
   visits: {type: Number, default: 0},
   createdAt: {type: Date, default: Date.now}
+});
+
+db.urls.pre('save', function(next) {
+  var shasum = crypto.createHash('sha1');
+  shasum.update(this.url);
+  this.code = shasum.digest('hex').slice(0, 5);
+  next();
 });
 
 db.users = new Schema({
@@ -65,6 +70,31 @@ db.users = new Schema({
   password: String,
   createdAt: {type: Date, default: Date.now}
 });
+
+db.users.pre('save', function(next) {
+  this.password = bcrypt.hashSync(this.password, null, null);
+  next();
+});
+
+db.users.methods.compare = function(attempt, cb) {
+  console.log('COMPARED');
+  bcrypt.compare(attempt, this.password, function(err, isMatch) {
+    cb(isMatch);
+  });
+};
+
+// comparePassword: function(attemptedPassword, callback) {
+//     bcrypt.compare(attemptedPassword, this.get('password'), function(err, isMatch) {
+//       callback(isMatch);
+//     });
+//   },
+//   hashPassword: function() {
+//     var cipher = Promise.promisify(bcrypt.hash);
+//     return cipher(this.get('password'), null, null).bind(this)
+//       .then(function(hash) {
+//         this.set('password', hash);
+//       });
+//   }
 
 db.url = mongoose.model('urls', db.urls);
 db.user = mongoose.model('users', db.users);
