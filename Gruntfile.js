@@ -3,14 +3,12 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
-      concat: {
-        options: {
-          separator: ';',
-        },
-        dist: {
-          src: ['public/**/*.js'],
-          dest: 'public/dist/built.js',
-        },
+      options: {
+        separator: ';',
+      },
+      dist: {
+        src: ['public/lib/*.js', 'public/client/*.js'],
+        dest: 'public/dist/built.js'
       },
     },
 
@@ -23,6 +21,8 @@ module.exports = function(grunt) {
       }
     },
 
+    clean: ['public/dist'],
+
     nodemon: {
       dev: {
         script: 'server.js'
@@ -32,14 +32,15 @@ module.exports = function(grunt) {
     uglify: {
       target: {
         files: {
-          'public/dest/output.min.js': ['public/dest/*.js']
+          'public/min/output.min.js': ['public/dist/*.js']
         }
       }
     },
 
     eslint: {
       target: [
-        // Add list of files to lint here
+        'public/**/*.js',
+        'server.js'
       ]
     },
 
@@ -49,7 +50,7 @@ module.exports = function(grunt) {
           expand: true,
           cwd: 'public',
           src: ['*.css', '!*.min.css'],
-          dest: 'public/dest',
+          dest: 'public/min',
           ext: '.min.css'
         }]
       }
@@ -83,6 +84,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-eslint');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
@@ -97,26 +99,31 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
 
   grunt.registerTask('test', [
-    'nodemon',
     'mochaTest'
   ]);
 
   grunt.registerTask('min', [ 'cssmin', 'uglify' ]);
+
+  grunt.registerTask('start', [ 'concat', 'min', 'nodemon' ]);
 
   grunt.registerTask('build', [
   ]);
 
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
-      grunt.task.run([ 'concat', 'min', 'shell' ]);
+      grunt.task.run([ 'clean', 'eslint', 'test', 'shell' ]);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
   });
 
-  grunt.registerTask('deploy', [
-    // add your deploy tasks here
-  ]);
+  grunt.registerTask('deploy', function(n) {
+    if (grunt.option('prod')) {
+      grunt.task.run([ 'upload' ]);
+    } else {
+      grunt.task.run([ 'clean', 'eslint', 'test', 'start' ]);
+    }
+  });
 
 
 };
